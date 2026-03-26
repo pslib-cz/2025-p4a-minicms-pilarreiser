@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatDate(value: Date | string | null | undefined) {
   if (!value) {
-    return "Unpublished";
+    return "Unknown date";
   }
 
   return new Intl.DateTimeFormat("en", {

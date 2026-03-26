@@ -1,19 +1,19 @@
 import type { MetadataRoute } from "next";
 
-import { getPublishedArticles } from "@/lib/articles";
+import { getRecentWeedLogs } from "@/lib/weed-logs";
 import { siteConfig } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const articles = await getPublishedArticles();
+  const weedLogs = await getRecentWeedLogs();
 
   return [
     {
       url: siteConfig.url,
       lastModified: new Date(),
     },
-    ...articles.map((article) => ({
-      url: `${siteConfig.url}/${article.slug}`,
-      lastModified: article.updatedAt,
+    ...weedLogs.map((weedLog) => ({
+      url: `${siteConfig.url}/logs/${weedLog.slug}`,
+      lastModified: weedLog.updatedAt,
     })),
   ];
 }

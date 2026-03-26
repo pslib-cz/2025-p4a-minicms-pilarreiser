@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { auth, signOut } from "@/auth";
@@ -8,18 +9,32 @@ export async function Navbar() {
   const session = await auth();
 
   return (
-    <header className="border-b border-[color:var(--border)] bg-white/90 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-4">
-        <div className="flex items-center gap-8">
-          <Link href="/" className="text-xl font-semibold tracking-tight text-[color:var(--foreground)]">
-            MiniCMS
+    <header className="sticky top-0 z-40 border-b border-[color:var(--border)] bg-[color:var(--surface)]/92 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-3 text-[color:var(--foreground)]">
+              <span className="overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-1 shadow-[0_10px_24px_-20px_rgba(44,71,43,0.24)]">
+              <Image
+                src="/logo/weedpal-logo.png"
+                alt="Weedpal logo"
+                width={40}
+                height={40}
+                className="size-10 rounded-xl object-cover"
+              />
+            </span>
+            <span className="flex flex-col leading-none">
+              <span className="text-lg font-semibold tracking-tight">Weedpal</span>
+              <span className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                Latest posts
+              </span>
+            </span>
           </Link>
           <nav className="hidden items-center gap-5 text-sm text-[color:var(--muted-foreground)] md:flex">
             <Link href="/" className="hover:text-[color:var(--foreground)]">
-              Articles
+              Feed
             </Link>
-            <Link href="/dashboard" className="hover:text-[color:var(--foreground)]">
-              Dashboard
+            <Link href="/dashboard/logs" className="hover:text-[color:var(--foreground)]">
+              My Logs
             </Link>
           </nav>
         </div>
@@ -27,11 +42,11 @@ export async function Navbar() {
         <div className="flex items-center gap-3">
           {session?.user ? (
             <>
-              <span className="hidden text-sm text-[color:var(--muted-foreground)] sm:inline">
+              <span className="hidden rounded-full bg-[color:var(--surface-elevated)] px-3 py-2 text-sm text-[color:var(--muted-foreground)] lg:inline">
                 {session.user.name ?? session.user.email}
               </span>
               <Button asChild variant="secondary" size="sm">
-                <Link href="/dashboard">Open Dashboard</Link>
+                <Link href="/dashboard/logs/new">Post</Link>
               </Button>
               <form
                 action={async () => {
@@ -45,9 +60,14 @@ export async function Navbar() {
               </form>
             </>
           ) : (
-            <Button asChild size="sm">
-              <Link href="/api/auth/signin">Sign In</Link>
-            </Button>
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/login">Sign in</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/register">Join Weedpal</Link>
+              </Button>
+            </>
           )}
         </div>
       </div>

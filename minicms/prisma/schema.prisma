@@ -11,11 +11,13 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
+  passwordHash  String?
   emailVerified DateTime?
   image         String?
+  role          String    @default("USER")
   accounts      Account[]
   sessions      Session[]
-  articles      Article[]
+  weedLogs      WeedLog[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -54,23 +56,23 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model Article {
-  id          String                 @id @default(cuid())
-  title       String
-  slug        String                 @unique
-  description String
-  content     String
-  published   Boolean                @default(true)
-  publishedAt DateTime?
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  authorId    String
-  author      User                   @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  tags        TagsOnArticles[]
-  categories  CategoriesOnArticles[]
+model WeedLog {
+  id        String           @id @default(cuid())
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  authorId  String
+  title     String
+  slug      String           @unique
+  content   String
+  strain    String
+  type      String
+  rating    Int
+  imageUrl  String?
+  author    User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags      TagsOnWeedLogs[]
 
   @@index([authorId])
-  @@index([published])
+  @@index([createdAt])
 }
 
 model Tag {
@@ -79,32 +81,14 @@ model Tag {
   slug      String           @unique
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
-  articles  TagsOnArticles[]
+  weedLogs  TagsOnWeedLogs[]
 }
 
-model Category {
-  id        String                 @id @default(cuid())
-  name      String
-  slug      String                 @unique
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
-  articles  CategoriesOnArticles[]
-}
-
-model TagsOnArticles {
-  articleId String
+model TagsOnWeedLogs {
+  weedLogId String
   tagId     String
-  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  weedLog   WeedLog @relation(fields: [weedLogId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
-  @@id([articleId, tagId])
-}
-
-model CategoriesOnArticles {
-  articleId  String
-  categoryId String
-  article    Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-
-  @@id([articleId, categoryId])
+  @@id([weedLogId, tagId])
 }

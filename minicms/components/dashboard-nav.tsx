@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/dashboard", label: "Overview" },
-  { href: "/dashboard/articles", label: "My Articles" },
-  { href: "/dashboard/articles/new", label: "Create Article" },
+  { href: "/dashboard/logs", label: "My Logs" },
+  { href: "/dashboard/logs/new", label: "New Log" },
 ];
 
 export function DashboardNav() {

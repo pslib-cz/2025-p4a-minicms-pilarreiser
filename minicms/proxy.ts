@@ -7,8 +7,9 @@ export default auth((request) => {
     return NextResponse.next();
   }
 
-  const signInUrl = new URL("/api/auth/signin", request.nextUrl.origin);
-  signInUrl.searchParams.set("callbackUrl", request.nextUrl.href);
+  const signInUrl = new URL("/login", request.nextUrl.origin);
+  const callbackUrl = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  signInUrl.searchParams.set("callbackUrl", callbackUrl);
 
   return NextResponse.redirect(signInUrl);
 });

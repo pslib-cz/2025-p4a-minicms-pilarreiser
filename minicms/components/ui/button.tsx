@@ -9,11 +9,11 @@ type ButtonSize = "default" | "sm" | "lg" | "icon";
 const variantClasses: Record<ButtonVariant, string> = {
   default: "bg-[color:var(--accent)] text-white hover:bg-[color:var(--accent-strong)]",
   secondary:
-    "bg-[color:var(--surface-subtle)] text-[color:var(--foreground)] hover:bg-[color:var(--border)]",
+    "bg-[color:var(--surface-subtle)] text-[color:var(--foreground)] hover:bg-[color:var(--border-strong)]",
   outline:
     "border border-[color:var(--border)] bg-transparent text-[color:var(--foreground)] hover:bg-[color:var(--surface-subtle)]",
-  ghost: "bg-transparent text-[color:var(--foreground)] hover:bg-[color:var(--surface-subtle)]",
-  destructive: "bg-[#b42318] text-white hover:bg-[#912018]",
+  ghost: "bg-transparent text-[color:var(--foreground)] hover:bg-[color:var(--surface-elevated)]",
+  destructive: "bg-[#b85a5a] text-white hover:bg-[#a54949]",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

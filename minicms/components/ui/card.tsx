@@ -6,7 +6,7 @@ export function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "rounded-[2rem] border border-[color:var(--border)] bg-[color:var(--surface)] shadow-[0_18px_48px_-28px_rgba(27,40,53,0.28)]",
+        "rounded-[2rem] border border-[color:var(--border)] bg-[color:var(--surface)] shadow-[0_16px_40px_-30px_rgba(44,71,43,0.18)]",
         className,
       )}
       {...props}

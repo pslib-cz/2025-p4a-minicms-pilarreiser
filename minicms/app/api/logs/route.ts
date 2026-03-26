@@ -3,31 +3,36 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
-import { createArticleData, getPublicArticleFeed, serializeArticle, articleInclude } from "@/lib/articles";
+import {
+  createWeedLogData,
+  getPublicWeedLogFeed,
+  serializeWeedLog,
+  weedLogInclude,
+} from "@/lib/weed-logs";
 import { prisma } from "@/lib/prisma";
-import { articleInputSchema, articleListQuerySchema } from "@/lib/validation/article";
+import { weedLogInputSchema, weedLogListQuerySchema } from "@/lib/validation/weed-log";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const parsed = articleListQuerySchema.safeParse({
+  const parsed = weedLogListQuerySchema.safeParse({
     page: searchParams.get("page") ?? undefined,
     pageSize: searchParams.get("pageSize") ?? undefined,
     query: searchParams.get("query") ?? undefined,
     tag: searchParams.get("tag") ?? undefined,
-    category: searchParams.get("category") ?? undefined,
+    type: searchParams.get("type") ?? undefined,
   });
 
   if (!parsed.success) {
     return NextResponse.json(
       {
-        error: "Invalid article query parameters.",
+        error: "Invalid log query parameters.",
         details: parsed.error.flatten(),
       },
       { status: 400 },
     );
   }
 
-  const result = await getPublicArticleFeed(parsed.data);
+  const result = await getPublicWeedLogFeed(parsed.data);
 
   return NextResponse.json(result);
 }
@@ -40,12 +45,12 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const parsed = articleInputSchema.safeParse(body);
+  const parsed = weedLogInputSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json(
       {
-        error: "Invalid article payload.",
+        error: "Invalid weed log payload.",
         details: parsed.error.flatten(),
       },
       { status: 400 },
@@ -53,26 +58,20 @@ export async function POST(request: Request) {
   }
 
   try {
-    const article = await prisma.article.create({
-      data: createArticleData(parsed.data, session.user.id),
-      include: articleInclude,
+    const weedLog = await prisma.weedLog.create({
+      data: createWeedLogData(parsed.data, session.user.id),
+      include: weedLogInclude,
     });
 
     revalidatePath("/");
     revalidatePath("/dashboard");
-    revalidatePath("/dashboard/articles");
-    revalidatePath(`/${article.slug}`);
+    revalidatePath("/dashboard/logs");
+    revalidatePath(`/logs/${weedLog.slug}`);
 
-    return NextResponse.json(serializeArticle(article), { status: 201 });
+    return NextResponse.json(serializeWeedLog(weedLog), { status: 201 });
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      return NextResponse.json(
-        { error: "An article with that slug already exists." },
-        { status: 409 },
-      );
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json({ error: "A log with that slug already exists." }, { status: 409 });
     }
 
     throw error;

@@ -5,11 +5,15 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
-type DeleteArticleButtonProps = {
-  articleId: string;
+type DeleteWeedLogButtonProps = {
+  weedLogId: string;
+  redirectTo?: string;
 };
 
-export function DeleteArticleButton({ articleId }: DeleteArticleButtonProps) {
+export function DeleteWeedLogButton({
+  weedLogId,
+  redirectTo,
+}: DeleteWeedLogButtonProps) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -22,14 +26,14 @@ export function DeleteArticleButton({ articleId }: DeleteArticleButtonProps) {
         size="sm"
         disabled={isPending}
         onClick={() => {
-          if (!window.confirm("Delete this article? This action cannot be undone.")) {
+          if (!window.confirm("Delete this log? This cannot be undone.")) {
             return;
           }
 
           setError("");
 
           startTransition(async () => {
-            const response = await fetch(`/api/articles/${articleId}`, {
+            const response = await fetch(`/api/logs/${weedLogId}`, {
               method: "DELETE",
             });
 
@@ -38,8 +42,12 @@ export function DeleteArticleButton({ articleId }: DeleteArticleButtonProps) {
                 | { error?: string }
                 | null;
 
-              setError(payload?.error ?? "Unable to delete this article.");
+              setError(payload?.error ?? "Unable to delete this log.");
               return;
+            }
+
+            if (redirectTo) {
+              router.push(redirectTo);
             }
 
             router.refresh();
@@ -48,7 +56,7 @@ export function DeleteArticleButton({ articleId }: DeleteArticleButtonProps) {
       >
         {isPending ? "Deleting..." : "Delete"}
       </Button>
-      {error ? <p className="text-sm text-[#b42318]">{error}</p> : null}
+      {error ? <p className="text-sm text-[#ff8b8b]">{error}</p> : null}
     </div>
   );
 }

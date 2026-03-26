@@ -5,8 +5,8 @@ function stripTrailingSlash(value: string) {
 }
 
 export const siteConfig = {
-  name: "MiniCMS",
-  description: "A lightweight publishing platform for writing, organizing, and sharing articles.",
+  name: "Weedpal",
+  description: "A social feed for weed logs, strain ratings, photos, and real user notes.",
   url: stripTrailingSlash(
     process.env.NEXT_PUBLIC_APP_URL ?? process.env.AUTH_URL ?? defaultUrl,
   ),

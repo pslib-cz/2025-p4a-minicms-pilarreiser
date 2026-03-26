@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
-import { CookieConsent } from "@/components/cookie-consent";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { siteConfig } from "@/lib/site";
@@ -20,6 +19,9 @@ export const metadata: Metadata = {
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  icons: {
+    icon: "/logo/weedpal-logo.png",
+  },
   openGraph: {
     title: siteConfig.name,
     description: siteConfig.description,
@@ -42,7 +44,6 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
         </div>
-        <CookieConsent />
       </body>
     </html>
   );

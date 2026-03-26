@@ -1,55 +1,142 @@
-import { ArticleBrowser } from "@/components/article-browser";
-import { getPublishedArticles } from "@/lib/articles";
+import Image from "next/image";
+import Link from "next/link";
 
-export const revalidate = 3600;
+import { auth } from "@/auth";
+import { WeedLogFeed } from "@/components/weed-log-feed";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getRecentWeedLogs } from "@/lib/weed-logs";
+
+export const revalidate = 300;
 
 export default async function Home() {
-  const articles = await getPublishedArticles();
+  const session = await auth();
+  const weedLogs = await getRecentWeedLogs();
+  const tagCount = new Set(weedLogs.flatMap((weedLog) => weedLog.tags.map((tag) => tag.slug))).size;
+  const averageRating =
+    weedLogs.length > 0
+      ? (
+          weedLogs.reduce((total, weedLog) => total + weedLog.rating, 0) / weedLogs.length
+        ).toFixed(1)
+      : "0.0";
+  const topTags = Array.from(
+    weedLogs
+      .flatMap((weedLog) => weedLog.tags)
+      .reduce((accumulator, tag) => {
+        const current = accumulator.get(tag.slug);
+
+        accumulator.set(tag.slug, {
+          ...tag,
+          count: (current?.count ?? 0) + 1,
+        });
+
+        return accumulator;
+      }, new Map<string, { id: string; name: string; slug: string; count: number }>()),
+  )
+    .map(([, tag]) => tag)
+    .sort((left, right) => right.count - left.count)
+    .slice(0, 5);
+  const photoCount = weedLogs.filter((weedLog) => Boolean(weedLog.imageUrl)).length;
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-6 py-16">
-      <section className="grid gap-8 rounded-[2.5rem] border border-[color:var(--border)] bg-[color:var(--surface)] p-8 shadow-[0_18px_48px_-28px_rgba(27,40,53,0.28)] lg:grid-cols-[1.5fr_1fr] lg:p-12">
-        <div className="space-y-5">
-          <span className="inline-flex rounded-full bg-[color:var(--surface-subtle)] px-4 py-2 text-sm font-medium text-[color:var(--foreground)]">
-            Publishing made deliberate
-          </span>
-          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-[color:var(--foreground)] sm:text-5xl">
-            A focused editorial space for writing, organizing, and publishing articles.
-          </h1>
-          <p className="max-w-2xl text-lg leading-8 text-[color:var(--muted-foreground)]">
-            Browse published articles, filter by topic, and manage drafts from a protected
-            dashboard built for a small team or a single editor.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-          <div className="rounded-[2rem] bg-[color:var(--surface-subtle)] p-6">
-            <p className="text-sm uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-              Published
+    <div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[260px_minmax(0,1fr)_280px] lg:items-start">
+      <aside className="space-y-4 lg:sticky lg:top-24">
+        <Card className="overflow-hidden border-[color:var(--border-strong)]">
+          <CardHeader className="space-y-5">
+            <div className="flex items-center gap-4">
+              <span className="overflow-hidden rounded-[1.5rem] border border-[color:var(--border)] bg-[color:var(--surface-elevated)] p-1">
+                <Image
+                  src="/logo/weedpal-logo.png"
+                  alt="Weedpal logo"
+                  width={64}
+                  height={64}
+                  className="size-14 rounded-[1.15rem] object-cover"
+                />
+              </span>
+              <div>
+                <p className="text-sm uppercase tracking-[0.18em] text-[color:var(--accent-bright)]">
+                  Weedpal
+                </p>
+                <h1 className="mt-1 text-2xl font-semibold tracking-tight">Latest posts</h1>
+              </div>
+            </div>
+            <p className="text-sm leading-6 text-[color:var(--muted-foreground)]">
+              See what everyone is smoking right now, from quick ratings to full strain writeups.
             </p>
-            <p className="mt-3 text-4xl font-semibold">{articles.length}</p>
-          </div>
-          <div className="rounded-[2rem] bg-[color:var(--surface-subtle)] p-6">
-            <p className="text-sm uppercase tracking-[0.2em] text-[color:var(--muted-foreground)]">
-              Topics
-            </p>
-            <p className="mt-3 text-4xl font-semibold">
-              {
-                new Set(articles.flatMap((article) => article.tags.map((tag) => tag.slug))).size
-              }
-            </p>
-          </div>
-        </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button asChild className="w-full">
+              <Link href={session?.user ? "/dashboard/logs/new" : "/register"}>
+                {session?.user ? "Post a log" : "Join Weedpal"}
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" className="w-full">
+              <Link href={session?.user ? "/dashboard/logs" : "/login"}>
+                {session?.user ? "Open my logs" : "Sign in"}
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Feed stats</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-3">
+            <div className="rounded-[1.5rem] bg-[color:var(--surface-elevated)] p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                Logs
+              </p>
+              <p className="mt-2 text-3xl font-semibold">{weedLogs.length}</p>
+            </div>
+            <div className="rounded-[1.5rem] bg-[color:var(--surface-elevated)] p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                Avg rating
+              </p>
+              <p className="mt-2 text-3xl font-semibold">{averageRating}</p>
+            </div>
+            <div className="rounded-[1.5rem] bg-[color:var(--surface-elevated)] p-4">
+              <p className="text-xs uppercase tracking-[0.18em] text-[color:var(--muted-foreground)]">
+                Photos
+              </p>
+              <p className="mt-2 text-3xl font-semibold">{photoCount}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </aside>
+
+      <section className="min-w-0 space-y-4">
+        <WeedLogFeed weedLogs={weedLogs} />
       </section>
 
-      <section className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold tracking-tight">Latest articles</h2>
-          <p className="text-[color:var(--muted-foreground)]">
-            Search the current catalog or narrow it down by tag.
-          </p>
-        </div>
-        <ArticleBrowser articles={articles} />
-      </section>
+      <aside className="space-y-4 lg:sticky lg:top-24">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Trending tags</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {topTags.length > 0 ? (
+              topTags.map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`/?tag=${tag.slug}`}
+                  className="flex items-center justify-between rounded-[1.25rem] bg-[color:var(--surface-elevated)] px-4 py-3 transition hover:bg-[color:var(--surface-subtle)]"
+                >
+                  <span className="font-medium text-[color:var(--foreground)]">#{tag.name}</span>
+                  <Badge className="bg-[color:var(--surface)] text-[color:var(--muted-foreground)]">
+                    {tag.count}
+                  </Badge>
+                </Link>
+              ))
+            ) : (
+              <p className="text-sm text-[color:var(--muted-foreground)]">No tags yet.</p>
+            )}
+          </CardContent>
+        </Card>
+
+       
+      </aside>
     </div>
   );
 }
