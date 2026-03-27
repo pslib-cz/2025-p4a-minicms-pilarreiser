@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRecentWeedLogs } from "@/lib/weed-logs";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const session = await auth();

@@ -73,13 +73,23 @@ export function WeedLogForm({
     }));
   }
 
-  async function uploadImage(file: File) {
-    const formData = new FormData();
-    formData.set("file", file);
+async function uploadImage(file: File) {
+    if (!file.type.startsWith("image/")) {
+      setRootError("Only image uploads are allowed.");
+      return;
+    }
 
-    const response = await fetch("/api/upload", {
+    if (file.size > 4 * 1024 * 1024) {
+      setRootError("Images must be 4 MB or smaller.");
+      return;
+    }
+
+    const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
       method: "POST",
-      body: formData,
+      headers: {
+        "Content-Type": file.type,
+      },
+      body: file,
     });
 
     const payload = (await response.json().catch(() => null)) as
@@ -261,7 +271,7 @@ export function WeedLogForm({
                   }}
                 />
                 <p className="text-sm text-[color:var(--muted-foreground)]">
-                  Upload a local image. It will be stored in `/public/uploads`.
+                  Upload an image up to 4 MB. It will be stored in Vercel Blob.
                 </p>
                 {getError(errors, "imageUrl") ? (
                   <p className="text-sm text-[#ff8b8b]">{getError(errors, "imageUrl")}</p>

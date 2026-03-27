@@ -4,6 +4,23 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const weedTypeOptions = ["Indica", "Sativa", "Hybrid"] as const;
 
+function isValidImageUrl(value: string) {
+  if (!value) {
+    return true;
+  }
+
+  if (value.startsWith("/")) {
+    return true;
+  }
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export const weedLogInputSchema = z.object({
   title: z.string().trim().min(3, "Title must be at least 3 characters.").max(120),
   slug: z
@@ -25,9 +42,9 @@ export const weedLogInputSchema = z.object({
   imageUrl: z
     .string()
     .trim()
-    .max(260)
-    .refine((value) => !value || value.startsWith("/"), {
-      message: "Image URL must be a local upload path.",
+    .max(1024)
+    .refine(isValidImageUrl, {
+      message: "Image URL must be a local path or full URL.",
     })
     .default(""),
 });

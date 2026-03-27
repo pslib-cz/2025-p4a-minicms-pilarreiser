@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { canManageWeedLog } from "@/lib/permissions";
 import { siteConfig } from "@/lib/site";
 import { absoluteUrl, formatDate } from "@/lib/utils";
-import { getRecentWeedLogs, getWeedLogBySlug } from "@/lib/weed-logs";
+import { getWeedLogBySlug } from "@/lib/weed-logs";
 
 type WeedLogPageProps = {
   params: Promise<{
@@ -18,15 +18,7 @@ type WeedLogPageProps = {
   }>;
 };
 
-export const revalidate = 300;
-
-export async function generateStaticParams() {
-  const weedLogs = await getRecentWeedLogs();
-
-  return weedLogs.map((weedLog) => ({
-    slug: weedLog.slug,
-  }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -38,15 +30,17 @@ export async function generateMetadata({
     return {};
   }
 
+  const summary = `${weedLog.strain} · ${weedLog.type} · ${weedLog.rating}/10`;
+
   return {
     title: `${weedLog.title} by ${weedLog.author.name ?? "Anonymous"}`,
-    description: `${weedLog.strain} · ${weedLog.type} · ${weedLog.rating}/10`,
+    description: summary,
     alternates: {
       canonical: `/logs/${weedLog.slug}`,
     },
     openGraph: {
       title: weedLog.title,
-      description: `${weedLog.strain} · ${weedLog.type} · ${weedLog.rating}/10`,
+      description: summary,
       type: "article",
       url: `${siteConfig.url}/logs/${weedLog.slug}`,
       images: weedLog.imageUrl ? [absoluteUrl(weedLog.imageUrl)] : undefined,
