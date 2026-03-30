@@ -51,9 +51,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No image body was provided." }, { status: 400 });
   }
 
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    return NextResponse.json(
+      { error: "BLOB_READ_WRITE_TOKEN is missing from the environment." },
+      { status: 500 },
+    );
+  }
+
   try {
     const blob = await put(
-      `weed-logs/${session.user.id}/${Date.now()}-${sanitizeFilename(filename)}`,
+      `weed-logs/${session?.user?.id ?? "anonymous"}/${Date.now()}-${sanitizeFilename(filename)}`,
       request.body,
       {
         access: "public",
@@ -65,9 +72,23 @@ export async function POST(request: Request) {
     return NextResponse.json({
       url: blob.url,
     });
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    console.error("Vercel Blob Upload Error Details:", error);
+
+    if (message.includes("Cannot use public access on a private store")) {
+      return NextResponse.json(
+        {
+          error:
+            "Your Vercel Blob store is private. Weedpal needs a public Blob store for feed images.",
+        },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Unable to upload the image right now." },
+      { error: "Unable to upload the image right now.", details: message },
       { status: 500 },
     );
   }
